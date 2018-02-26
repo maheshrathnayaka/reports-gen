@@ -6,6 +6,14 @@ public class Properties {
 
     private List<Property> properties;
 
+    public Properties() {
+    }
+
+    public Properties(List<Property> properties) {
+        this.properties = properties;
+    }
+
+
     public List<Property> getProperties() {
         return properties;
     }

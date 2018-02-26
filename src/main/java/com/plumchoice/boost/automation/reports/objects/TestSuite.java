@@ -13,6 +13,20 @@ public class TestSuite {
     private Properties properties;
     private List<TestCase> testcase;
 
+    public TestSuite() {
+    }
+
+    public TestSuite(String name, double time, int tests, int errors, int skipped, int failures, Properties properties, List<TestCase> testcase) {
+        this.name = name;
+        this.time = time;
+        this.tests = tests;
+        this.errors = errors;
+        this.skipped = skipped;
+        this.failures = failures;
+        this.properties = properties;
+        this.testcase = testcase;
+    }
+
     public String getName() {
         return name;
     }

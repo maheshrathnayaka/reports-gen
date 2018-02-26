@@ -1,27 +1,33 @@
 package com.plumchoice.boost.automation.reports.parser;
 
-import com.plumchoice.boost.automation.reports.objects.Failure;
-import com.plumchoice.boost.automation.reports.objects.Property;
-import com.plumchoice.boost.automation.reports.objects.TestSuite;
+import com.plumchoice.boost.automation.reports.objects.Error;
+import com.plumchoice.boost.automation.reports.objects.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TestSuiteHandler extends DefaultHandler {
-    private List<TestSuite> testSuites = null;
-    private TestSuite testSuite = new TestSuite();
 
-    public List<TestSuite> getTestSuites() {
-        return testSuites;
-    }
-
-    boolean bProperties = false;
-    boolean bProperty = false;
-    boolean bTestcase = false;
+    boolean bTestCase = false;
     boolean bFailure = false;
+    boolean bError = false;
     boolean bSystemOut = false;
+    private List<TestSuite> testSuiteList = new ArrayList<>();
+    private TestSuite testSuite = new TestSuite();
+    private Property property = new Property();
+    private Failure failure = new Failure();
+    private Error error = new Error();
+    private List<Property> propertyList = new ArrayList<>();
+    private List<TestCase> testCaseList = new ArrayList<>();
+    private Properties properties = new Properties();
+    private TestCase testCase = new TestCase();
+
+    public List<TestSuite> getTestSuiteList() {
+        return testSuiteList;
+    }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -32,43 +38,78 @@ public class TestSuiteHandler extends DefaultHandler {
             int testSuiteErrors = Integer.parseInt(attributes.getValue("errors"));
             int testSuiteSkipped = Integer.parseInt(attributes.getValue("skipped"));
             int testSuiteFailures = Integer.parseInt(attributes.getValue("failures"));
-            if (qName.equalsIgnoreCase("properties")) {
-                if (qName.equalsIgnoreCase("property")) {
-                    Property property = new Property();
-                    property.setName(attributes.getValue("name"));
-                    property.setValue(attributes.getValue("value"));
-                    testSuite.getProperties().getProperties().add(property);
-                    bProperty = true;
-                } else {
-                    bProperties = true;
-                }
-            } else if (qName.equalsIgnoreCase("testcase")) {
-                if (qName.equalsIgnoreCase("failure")) {
-                    Failure failure = new Failure();
-                    failure.setMessage(attributes.getValue("message"));
-                    failure.setType(attributes.getValue("type"));
-                    testSuite.getTestcase().get(0).setFailure(failure);
-                    bFailure = true;
-                } else if (qName.equalsIgnoreCase("system-out")) {
-                    bSystemOut = true;
-                } else {
-                    bTestcase = true;
-                }
-            }
+            testSuite.setName(testSuiteName);
+            testSuite.setTime(testSuiteTime);
+            testSuite.setTests(testSuiteTests);
+            testSuite.setErrors(testSuiteErrors);
+            testSuite.setSkipped(testSuiteSkipped);
+            testSuite.setFailures(testSuiteFailures);
+        } else if (qName.equalsIgnoreCase("property")) {
+            String propertyName = attributes.getValue("name");
+            String propertyValue = attributes.getValue("value");
+            property.setName(propertyName);
+            property.setValue(propertyValue);
+            propertyList.add(property);
+            testSuite.setProperties(new Properties(propertyList));
+        }
+        if (qName.equalsIgnoreCase("testcase")) {
+            String testcaseName = attributes.getValue("name");
+            String testcaseClassName = attributes.getValue("classname");
+            double testcaseTime = Double.parseDouble(attributes.getValue("time"));
+            testCase.setName(testcaseName);
+            testCase.setClassname(testcaseClassName);
+            testCase.setTime(testcaseTime);
+            testCaseList.add(testCase);
+            testSuite.setTestcase(testCaseList);
+        } else if (qName.equalsIgnoreCase("failure")) {
+            String failureMessage = attributes.getValue("message");
+            String failureType = attributes.getValue("type");
+            failure.setMessage(failureMessage);
+            failure.setType(failureType);
+            testCase.setFailure(failure);
+            testCaseList.add(testCase);
+            testSuite.setTestcase(testCaseList);
+            bFailure = true;
+        } else if (qName.equalsIgnoreCase("error")) {
+            String errorMessage = attributes.getValue("message");
+            String errorType = attributes.getValue("type");
+            failure.setMessage(errorMessage);
+            failure.setType(errorType);
+            testCase.setError(error);
+            testCaseList.add(testCase);
+            testSuite.setTestcase(testCaseList);
+            bError = true;
         }
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if (qName.equalsIgnoreCase("properties")) {
-            testSuites.add(testSuite);
+            testSuiteList.add(testSuite);
+        }
+        else if (qName.equalsIgnoreCase("testcase")) {
+            testCaseList.add(testCase);
+            bTestCase = true;
+        }
+        if (qName.equalsIgnoreCase("system-out")) {
+            bSystemOut = true;
+            testSuiteList.add(testSuite);
         }
     }
 
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        if (bProperties){
-
+        if (bSystemOut) {
+            testCase.setSystemOut(new String(ch, start, length));
+            bSystemOut = false;
+        } else if (bFailure) {
+            failure.setFailureText(new String(ch, start, length));
+            testCase.setFailure(failure);
+            bFailure = false;
+        } else if (bError) {
+            error.setErrorText(new String(ch, start, length));
+            testCase.setError(error);
+            bError = false;
         }
     }
 }

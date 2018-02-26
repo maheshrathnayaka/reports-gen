@@ -6,7 +6,20 @@ public class TestCase {
     private String classname;
     private double time;
     private Failure failure;
+    private Error error;
     private String systemOut;
+
+    public TestCase() {
+    }
+
+    public TestCase(String name, String classname, double time, Failure failure, Error error, String systemOut) {
+        this.name = name;
+        this.classname = classname;
+        this.time = time;
+        this.failure = failure;
+        this.error = error;
+        this.systemOut = systemOut;
+    }
 
     public String getName() {
         return name;
@@ -38,6 +51,14 @@ public class TestCase {
 
     public void setFailure(Failure failure) {
         this.failure = failure;
+    }
+
+    public Error getError() {
+        return error;
+    }
+
+    public void setError(Error error) {
+        this.error = error;
     }
 
     public String getSystemOut() {

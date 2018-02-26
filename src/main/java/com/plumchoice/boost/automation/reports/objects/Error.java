@@ -1,18 +1,17 @@
 package com.plumchoice.boost.automation.reports.objects;
 
-public class Failure {
-
+public class Error {
     private String message;
     private String type;
-    private String failureText;
+    private String errorText;
 
-    public Failure() {
+    public Error() {
     }
 
-    public Failure(String message, String type, String failureText) {
+    public Error(String message, String type, String errorText) {
         this.message = message;
         this.type = type;
-        this.failureText = failureText;
+        this.errorText = errorText;
     }
 
     public String getMessage() {
@@ -31,19 +30,20 @@ public class Failure {
         this.type = type;
     }
 
-    public String getFailureText() {
-        return failureText;
+    public String getErrorText() {
+        return errorText;
     }
 
-    public void setFailureText(String failureText) {
-        this.failureText = failureText;
+    public void setErrorText(String errorText) {
+        this.errorText = errorText;
     }
 
     @Override
     public String toString() {
-        return "Failure{" +
+        return "Error{" +
                 "message='" + message + '\'' +
                 ", type='" + type + '\'' +
+                ", errorText='" + errorText + '\'' +
                 '}';
     }
 }
